@@ -1,0 +1,66 @@
+{
+    "lessons":[
+        "math",
+        "physics",
+        "biology",
+        "literature",
+        "pce",
+        "chemistry",
+        "history",
+        "informatics",
+        "russian"
+    ],
+    "student_lessons_per_day_limit" : 5,
+    "same_lessons_repeats_per_day_per_group_limit" : 2,
+    "teacher_lessons_per_day_limit" : 3,
+    "groups_plans":[
+        {
+            "name" : "A",
+            "math" : 4,
+            "physics" : 4,
+            "biology" : 2,
+            "literature" : 2,
+            "pce" : 2,
+            "chemistry" : 2,
+            "history" : 2,
+            "informatics" : 2,
+            "russian" : 2
+        },
+        {
+            "name" : "B",
+            "math" : 4,
+            "physics" : 2,
+            "biology" : 2,
+            "literature" : 2,
+            "pce" : 2,
+            "chemistry" : 2,
+            "history" : 2,
+            "informatics" : 4,
+            "russian" : 2
+        },
+        {
+            "name" : "C",
+            "math" : 2,
+            "physics" : 2,
+            "biology" : 2,
+            "literature" : 4,
+            "pce" : 2,
+            "chemistry" : 2,
+            "history" : 4,
+            "informatics" : 2,
+            "russian" : 2
+        },
+        {
+            "name" : "D",
+            "math" : 2,
+            "physics" : 2,
+            "biology" : 4,
+            "literature" : 2,
+            "pce" : 2,
+            "chemistry" : 4,
+            "history" : 2,
+            "informatics" : 2,
+            "russian" : 2
+        }
+    ]
+}
