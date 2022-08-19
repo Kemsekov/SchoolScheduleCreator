@@ -1,3 +1,4 @@
+# Motivation
 Imagine you have a several classes in school which attain 
 same disciplines in different proportions and you need to 
 create a schedule in which each group attend
@@ -20,6 +21,11 @@ So this python program builds a 'smart' flow graph from given data, finds
 max flow, creates a schedule for the whole week for each of given group and
 reorder it a bit. By doing this we successfully creating perfect schedule
 for both teachers and students.
+
+# Dependencies
+    networkx-2.8.5
+
+# Expected output
 
 In the project there is a data.json which content is describing all
 this requirements. After I run program with that json here's what it output:
