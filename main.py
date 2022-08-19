@@ -1,4 +1,5 @@
 import json
+from typing import Dict
 import networkx as nx
 data = json.load(open('data.json'))
 # a list of lessons
@@ -87,7 +88,43 @@ def print_schedule(group_name : str, schedule : dict):
         print()
     print('-----------------')
 
+def ensure_list_have_size_at_least(l : list, size : int, fill_element):
+    while len(l)<size:
+        l.append(fill_element)
+
+# there is cases when same discipline must be held in different
+# groups at the same time. We assume teacher cannot be in two places
+# simultaneously so we need to reorder each day schedule a bit
+# by changing order in which disciplines held for each group
+def reorder_schedules(schedules : list[Dict[str,list[str]]]):
+    free_indices : Dict[str,list] = dict()
+    fill_element = "___"
+    for day in week:
+        for l in lessons:
+            day_lesson = day+'_'+l
+            free_indices[day_lesson] = list(range(student_lessons_per_day_limit))
+    for schedule in schedules:
+        for day in schedule:
+            index = 0
+            schedule_day = schedule[day]
+            for lesson in schedule_day.copy():
+                day_lesson = day+'_'+lesson
+                indices = free_indices[day_lesson]
+                if index in indices: 
+                    indices.remove(index)
+                else:
+                    if not indices: 
+                        print("Cannot reorder elements")
+                        return
+                    new_index = indices[0]
+                    ensure_list_have_size_at_least(schedule_day,new_index,fill_element)
+                    schedule_day[index], schedule_day[new_index] = schedule_day[new_index], schedule_day[index]
+                index+=1
+        pass
+    pass
+
 def main():
+    schedules = []
     for g in groups_plans:
         group_name = g["name"]
         graph = init_group(g)
@@ -98,8 +135,10 @@ def main():
             print("Impossible to create a schedule with given input")
             return
         schedule = create_schedule(max_flow)
+        schedules.append(schedule)
+    reorder_schedules(schedules)
+    for schedule in schedules:
         print_schedule(group_name,schedule)
-
     pass
 
 if __name__ == "__main__":
