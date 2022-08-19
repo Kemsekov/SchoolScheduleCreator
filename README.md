@@ -31,7 +31,7 @@ In the project there is a data.json which content is describing all
 this requirements. After I run program with that json here's what it output:
 
 ```
-Group D
+Group A
 
 monday:
         math
@@ -66,7 +66,7 @@ friday:
         biology
 
 -----------------
-Group D
+Group B
 
 monday:
         informatics
@@ -101,7 +101,7 @@ friday:
         informatics
 
 -----------------
-Group D
+Group C
 
 monday:
         russian

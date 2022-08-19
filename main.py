@@ -125,6 +125,7 @@ def reorder_schedules(schedules : list[Dict[str,list[str]]]):
 
 def main():
     schedules = []
+    group_names = []
     for g in groups_plans:
         group_name = g["name"]
         graph = init_group(g)
@@ -136,8 +137,9 @@ def main():
             return
         schedule = create_schedule(max_flow)
         schedules.append(schedule)
+        group_names.append(group_name)
     reorder_schedules(schedules)
-    for schedule in schedules:
+    for group_name,schedule in zip(group_names,schedules):
         print_schedule(group_name,schedule)
     pass
 
