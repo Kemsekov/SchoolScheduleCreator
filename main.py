@@ -89,7 +89,7 @@ def print_schedule(group_name : str, schedule : dict):
     print('-----------------')
 
 def ensure_list_have_size_at_least(l : list, size : int, fill_element):
-    while len(l)<size:
+    while len(l)<=size:
         l.append(fill_element)
 
 # there is cases when same discipline must be held in different
