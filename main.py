@@ -96,36 +96,71 @@ def ensure_list_have_size_at_least(l : list, size : int, fill_element):
 # groups at the same time. We assume teacher cannot be in two places
 # simultaneously so we need to reorder each day schedule a bit
 # by changing order in which disciplines held for each group
-def reorder_schedules(schedules : list[Dict[str,list[str]]]):
-    free_indices : Dict[str,list] = dict()
-    fill_element = "___"
+def reorder_schedules(schedules : list[Dict[str,list[str]]],group_names : list[str]):
+    
     for day in week:
-        for l in lessons:
-            day_lesson = day+'_'+l
-            free_indices[day_lesson] = list(range(student_lessons_per_day_limit))
-    for schedule in schedules:
-        for day in schedule:
-            index = 0
-            schedule_day = schedule[day]
-            for lesson in schedule_day.copy():
-                day_lesson = day+'_'+lesson
-                indices = free_indices[day_lesson]
-                if index in indices: 
-                    indices.remove(index)
-                else:
-                    if not indices: 
-                        print("Cannot reorder elements")
-                        return
-                    new_index = indices[0]
-                    ensure_list_have_size_at_least(schedule_day,new_index,fill_element)
-                    schedule_day[index], schedule_day[new_index] = schedule_day[new_index], schedule_day[index]
-                index+=1
-        pass
-    pass
+        graph = nx.DiGraph()
+        end="end"
+        start="start"
+        graph.add_node(end)
+        graph.add_node(start)
+        for lesson in lessons:
+            for id in range(0,student_lessons_per_day_limit):
+                lesson_id=lesson+'_'+str(id)
+                graph.add_node(lesson_id)
+                graph.add_edge(lesson_id,end,capacity=1)
+
+        index = 0
+        for group_schedule in schedules:
+            name=group_names[index]
+            day_schedule = group_schedule[day]
+            graph.add_node(name)
+            graph.add_edge(start,name)
+            index+=1
+            for lesson in set(day_schedule):
+                required_lesson=name+'_'+lesson
+                graph.add_node(required_lesson)
+                graph.add_edge(name,required_lesson,capacity=day_schedule.count(lesson))
+                for id in range(0,student_lessons_per_day_limit):
+                    graph.add_edge(required_lesson,lesson+'_'+str(id), capacity=1)
+        # now we need to find max flow trough this graph, where each
+        # group is source, and end is sink. 
+        # We need edge between group name and required lesson to be filled with 1!
+        flow_value, flow_dict = nx.maximum_flow(graph,start,end)
+        for edge in graph.edges:
+            print(edge)
+            print(flow_dict[edge[0]][edge[1]])
+            print("----------")
+        index = 0
+        fill_element="---"
+        for group_schedule in schedules:
+            name=group_names[index]
+            day_schedule = group_schedule[day]
+            index+=1
+            for edge in graph.edges(name):
+                if flow_dict[edge[0]][edge[1]]!=1:
+                    print("Count not fit all required lessons!")
+                    return
+            day_schedule_copy = day_schedule.copy()
+            day_schedule.clear()
+            for lesson in set(day_schedule_copy):
+                required_lesson=name+'_'+lesson
+                def assign_lesson():
+                    for id in range(0,student_lessons_per_day_limit):
+                        lesson_id=lesson+'_'+str(id)
+                        if flow_dict[required_lesson][lesson_id]==1:
+                            ensure_list_have_size_at_least(day_schedule,id,fill_element)
+                            day_schedule[id] = lesson
+                            return True
+                    return False
+                if not assign_lesson():
+                    print("Count not fit all required lessons!")
+                    return
+            
 
 def main():
     schedules = []
-    group_names = []
+    group_names : list[str] = []
     for g in groups_plans:
         group_name = g["name"]
         graph = init_group(g)
@@ -138,7 +173,7 @@ def main():
         schedule = create_schedule(max_flow)
         schedules.append(schedule)
         group_names.append(group_name)
-    reorder_schedules(schedules)
+    reorder_schedules(schedules,group_names)
     for group_name,schedule in zip(group_names,schedules):
         print_schedule(group_name,schedule)
     pass
