@@ -34,141 +34,142 @@ this requirements. After I run program with that json here's what it output:
 Group A
 
 monday:
+        informatics
         math
-        informatics
-        informatics
+        math
 
 tuesday:
+        informatics
         chemistry
-        history
-        history
-        russian
+        chemistry
+        literature
 
 wednesday:
-        literature
-        literature
+        history
+        history
         pce
         pce
-        chemistry
+        literature
 
 thursday:
+        physics
+        physics
         math
-        physics
-        physics
         biology
         russian
 
 friday:
-        math
-        math
-        physics
-        physics
         biology
+        physics
+        russian
+        math
+        physics
 
 -----------------
 Group B
 
 monday:
-        informatics
-        history
+        math
         biology
-        russian
-        russian
+        biology
 
 tuesday:
+        chemistry
+        informatics
+        informatics
+        ---
         history
-        pce
-        biology
 
 wednesday:
-        chemistry
-        pce
-        math
-        chemistry
+        informatics
+        informatics
+        history
         literature
+        pce
 
 thursday:
+        literature
+        pce
+        chemistry
         physics
         math
-        math
-        informatics
 
 friday:
-        literature
         physics
         math
-        informatics
-        informatics
+        math
+        russian
+        russian
 
 -----------------
 Group C
 
 monday:
-        russian
-        physics
+        biology
+        informatics
         history
-        history
-        physics
 
 tuesday:
-        math
-        math
-        chemistry
+        pce
+        russian
+        history
+        history
 
 wednesday:
-        history
-        informatics
-        informatics
+        physics
+        physics
         russian
+        informatics
+        math
 
 thursday:
-        literature
-        literature
-        pce
-        chemistry
+        math
         history
+        literature
+        literature
+        chemistry
 
 friday:
-        literature
-        biology
-        biology
-        literature
         pce
+        chemistry
+        literature
+        literature
+        biology
 
 -----------------
 Group D
 
 monday:
-        biology
-        biology
-        physics
-        pce
+        history
+        literature
         pce
 
 tuesday:
-        literature
-        biology
+        russian
         math
+        physics
+        biology
+        russian
 
 wednesday:
-        physics
+        chemistry
         math
         biology
-        history
+        physics
+        chemistry
 
 thursday:
-        informatics
         chemistry
-        literature
-        chemistry
+        biology
+        history
         informatics
 
 friday:
         chemistry
-        chemistry
-        history
-        russian
-        russian
+        literature
+        biology
+        informatics
+        pce
 
 -----------------
 ```
