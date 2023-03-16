@@ -131,6 +131,9 @@ def reorder_schedules(schedules : list[Dict[str,list[str]]],group_names : list[s
                 schedule[lesson_index]=lesson
                 line_graph.remove_node(node)
             lesson_index+=1
+        if lesson_index>student_lessons_per_day_limit:
+            return False
+    return True
 
 
 #at the end we check that schedules are really fitting all necessary lessons for each group
@@ -149,13 +152,18 @@ def main():
         expected_lessons = count_group_expected_lessons_in_week(g)
         lessons_count,max_flow = solve_group_graph(group_name,"end",graph)
         if(expected_lessons!=lessons_count):
+            print("Expected lessons count not equal builded by schedules lessons count")
             print(f'{expected_lessons}!={lessons_count}')
-            print("Impossible to create a schedule with given input")
+            print("Impossible to create a schedule for group "+group_name)
+            print("Try decrease lessons count for this group or increase same_lessons_repeats_per_day_per_group_limit")
             return
         schedule = create_schedule(max_flow)
         schedules.append(schedule)
         group_names.append(group_name)
-    reorder_schedules(schedules,group_names)
+    
+    if not reorder_schedules(schedules,group_names):
+        print("Cannot reorder lessons! Try increasing student_lessons_per_day_limit.")
+
     check_schedules(schedules,group_names)
     for group_name,schedule in zip(group_names,schedules):
         print_schedule(group_name,schedule)
