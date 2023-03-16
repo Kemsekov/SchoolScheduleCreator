@@ -131,9 +131,6 @@ def reorder_schedules(schedules : list[Dict[str,list[str]]],group_names : list[s
                 schedule[lesson_index]=lesson
                 line_graph.remove_node(node)
             lesson_index+=1
-        if lesson_index>student_lessons_per_day_limit:
-            return False
-    return True
 
 
 #at the end we check that schedules are really fitting all necessary lessons for each group
@@ -161,9 +158,7 @@ def main():
         schedules.append(schedule)
         group_names.append(group_name)
     
-    if not reorder_schedules(schedules,group_names):
-        print("Cannot reorder lessons! Try increasing student_lessons_per_day_limit.")
-
+    reorder_schedules(schedules,group_names)
     check_schedules(schedules,group_names)
     for group_name,schedule in zip(group_names,schedules):
         print_schedule(group_name,schedule)
