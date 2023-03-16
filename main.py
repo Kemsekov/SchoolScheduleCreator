@@ -95,68 +95,60 @@ def ensure_list_have_size_at_least(l : list, size : int, fill_element):
 # there is cases when same discipline must be held in different
 # groups at the same time. We assume teacher cannot be in two places
 # simultaneously so we need to reorder each day schedule a bit
-# by changing order in which disciplines held for each group
+# by changing order in which disciplines held for each group                   
+
 def reorder_schedules(schedules : list[Dict[str,list[str]]],group_names : list[str]):
     
+    
     for day in week:
-        graph = nx.DiGraph()
-        end="end"
-        start="start"
-        graph.add_node(end)
-        graph.add_node(start)
-        for lesson in lessons:
-            for id in range(0,student_lessons_per_day_limit):
-                lesson_id=lesson+'_'+str(id)
-                graph.add_node(lesson_id)
-                graph.add_edge(lesson_id,end,capacity=1)
+        graph = nx.MultiGraph()
 
+        name_to_schedule = {}
         index = 0
         for group_schedule in schedules:
             name=group_names[index]
             day_schedule = group_schedule[day]
+            name_to_schedule[name]=day_schedule
             graph.add_node(name)
-            graph.add_edge(start,name)
             index+=1
-            for lesson in set(day_schedule):
-                required_lesson=name+'_'+lesson
-                graph.add_node(required_lesson)
-                graph.add_edge(name,required_lesson,capacity=day_schedule.count(lesson))
-                for id in range(0,student_lessons_per_day_limit):
-                    graph.add_edge(required_lesson,lesson+'_'+str(id), capacity=1)
-        # now we need to find max flow trough this graph, where each
-        # group is source, and end is sink. 
-        # We need edge between group name and required lesson to be filled with 1!
-        flow_value, flow_dict = nx.maximum_flow(graph,start,end)
-        for edge in graph.edges:
-            print(edge)
-            print(flow_dict[edge[0]][edge[1]])
-            print("----------")
-        index = 0
-        fill_element="---"
-        for group_schedule in schedules:
-            name=group_names[index]
-            day_schedule = group_schedule[day]
-            index+=1
-            for edge in graph.edges(name):
-                if flow_dict[edge[0]][edge[1]]!=1:
-                    print("Count not fit all required lessons!")
-                    return
-            day_schedule_copy = day_schedule.copy()
+            for lesson in day_schedule:
+                graph.add_edge(name,lesson,name=name,lesson=lesson) 
             day_schedule.clear()
-            for lesson in set(day_schedule_copy):
-                required_lesson=name+'_'+lesson
-                def assign_lesson():
-                    for id in range(0,student_lessons_per_day_limit):
-                        lesson_id=lesson+'_'+str(id)
-                        if flow_dict[required_lesson][lesson_id]==1:
-                            ensure_list_have_size_at_least(day_schedule,id,fill_element)
-                            day_schedule[id] = lesson
-                            return True
-                    return False
-                if not assign_lesson():
-                    print("Count not fit all required lessons!")
-                    return
-            
+        
+        lesson_index=0
+        filler="---"
+        line_graph=nx.line_graph(graph)
+
+        edge_lesson=nx.get_edge_attributes(graph,"lesson")
+        edge_group_name=nx.get_edge_attributes(graph,"name")
+
+        while True:
+            if(len(line_graph.nodes)==0): break
+            independent_set =  nx.maximal_independent_set(line_graph)
+            for node in independent_set:
+                lesson=edge_lesson[node]
+                group_name=edge_group_name[node]
+                schedule=name_to_schedule[group_name]
+                ensure_list_have_size_at_least(schedule,lesson_index,filler)
+                schedule[lesson_index]=lesson
+                line_graph.remove_node(node)
+            lesson_index+=1
+
+        # for matching in coloring:
+        #     for edge in matching:
+        #         graph.remove_edge(edge[0],edge[1])
+        #         schedule=name_to_schedule[edge[1]]
+        #         ensure_list_have_size_at_least(schedule,lesson_index,filler)
+        #         schedule[lesson_index]=edge[0]
+        #     lesson_index+=1
+
+
+#at the end we check that schedules are really fitting all necessary lessons for each group
+def check_schedules(schedules : list[Dict[str,list[str]]],group_names : list[str]):
+    index = 0
+    for schedule in schedules:
+        name = group_names[index]
+        index+=1
 
 def main():
     schedules = []
@@ -174,9 +166,9 @@ def main():
         schedules.append(schedule)
         group_names.append(group_name)
     reorder_schedules(schedules,group_names)
+    check_schedules(schedules,group_names)
     for group_name,schedule in zip(group_names,schedules):
         print_schedule(group_name,schedule)
-    pass
 
 if __name__ == "__main__":
     main()
