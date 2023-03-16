@@ -1,4 +1,5 @@
 {
+    "studying_period":["monday","tuesday","wednesday","thursday","friday"],
     "lessons":[
         "math",
         "physics",

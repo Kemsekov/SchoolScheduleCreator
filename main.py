@@ -17,7 +17,7 @@ teacher_lessons_per_day_limit = int(data["teacher_lessons_per_day_limit"])
 # of other disciplines.
 groups_plans = data["groups_plans"]
 
-week = ["monday","tuesday","wednesday","thursday","friday"]
+week = data["studying_period"]
 
 teacher_lessons_limits = {
         day+'_'+l:teacher_lessons_per_day_limit
@@ -98,8 +98,6 @@ def ensure_list_have_size_at_least(l : list, size : int, fill_element):
 # by changing order in which disciplines held for each group                   
 
 def reorder_schedules(schedules : list[Dict[str,list[str]]],group_names : list[str]):
-    
-    
     for day in week:
         graph = nx.MultiGraph()
 
@@ -133,14 +131,6 @@ def reorder_schedules(schedules : list[Dict[str,list[str]]],group_names : list[s
                 schedule[lesson_index]=lesson
                 line_graph.remove_node(node)
             lesson_index+=1
-
-        # for matching in coloring:
-        #     for edge in matching:
-        #         graph.remove_edge(edge[0],edge[1])
-        #         schedule=name_to_schedule[edge[1]]
-        #         ensure_list_have_size_at_least(schedule,lesson_index,filler)
-        #         schedule[lesson_index]=edge[0]
-        #     lesson_index+=1
 
 
 #at the end we check that schedules are really fitting all necessary lessons for each group
