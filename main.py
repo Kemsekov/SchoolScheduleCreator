@@ -8,8 +8,7 @@ lessons = data["lessons"]
 student_lessons_per_day_limit = int(data["student_lessons_per_day_limit"])
 # a limit to how much repetition of the same lesson per day is allowed
 same_lessons_repeats_per_day_per_group_limit = int(data["same_lessons_repeats_per_day_per_group_limit"])
-# a limit to how much lessons teacher can handle per day
-teacher_lessons_per_day_limit = int(data["teacher_lessons_per_day_limit"])
+
 
 # a list of groups data :
 # group name and count of lessons this group need to fill in each 
@@ -20,7 +19,8 @@ groups_plans = data["groups_plans"]
 week = data["studying_period"]
 
 teacher_lessons_limits = {
-        day+'_'+l:teacher_lessons_per_day_limit
+        # key is lesson at particular day, a limit is how much lesson's teacher can handle per day
+        day+'_'+l['name']:int(l["lessons_limit"])
         for l in lessons for day in week
     }
 
@@ -36,12 +36,14 @@ def init_group(group):
         graph.add_edge(name,day,capacity=student_lessons_per_day_limit)
 
     for l in lessons:
+        l=l['name']
         lessons_limit = int(group[l])
         graph.add_node(l)
         graph.add_edge(l,end,capacity=lessons_limit)
     
     for day in week:
         for l in lessons:
+            l=l['name']
             day_lesson = day+'_'+l
             graph.add_node(day_lesson)
             graph.add_edge(day,day_lesson,capacity=same_lessons_repeats_per_day_per_group_limit)
@@ -53,6 +55,7 @@ def solve_group_graph(group_name : str,end_point_name : str,graph : nx.Graph):
     flow_value, flow_dict = nx.maximum_flow(graph,group_name,end_point_name)
     for day in week:
         for l in lessons:
+            l=l['name']
             day_lesson = day+'_'+l
             teacher_lessons_limits[day_lesson]-=flow_dict[day_lesson][l]
     return flow_value, flow_dict
@@ -60,6 +63,7 @@ def solve_group_graph(group_name : str,end_point_name : str,graph : nx.Graph):
 def count_group_expected_lessons_in_week(group):
     result = 0
     for l in lessons:
+        l=l['name']
         result+=int(group[l])
     return result
 
@@ -72,6 +76,7 @@ def create_schedule(flow_dict : dict):
     for day in week:
         result[day] = []
         for l in lessons:
+            l=l['name']
             day_lesson = day+'_'+l
             lessons_count = flow_dict[day][day_lesson]
             for n in range(lessons_count):
@@ -138,6 +143,7 @@ def check_schedules(schedules : list[Dict[str,list[str]]],group_names : list[str
     index = 0
     for schedule in schedules:
         name = group_names[index]
+
         index+=1
 
 def main():
