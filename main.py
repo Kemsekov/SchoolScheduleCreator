@@ -1,17 +1,16 @@
 import json
 from typing import Dict
 import networkx as nx
+
 data = json.load(open('data.json'))
 #empty lesson
 filler="---"
-
 
 # a list of lessons
 lessons = data["lessons"]
 
 # a limit to how much repetition of the same lesson per day is allowed
 same_lessons_repeats_per_day_per_group_limit = int(data["same_lessons_repeats_per_day_per_group_limit"])
-
 
 # a list of groups data :
 # group name and count of lessons this group need to fill in each 
@@ -22,10 +21,11 @@ groups_plans = data["groups_plans"]
 group_lessons_per_day_limit = {
         g['name']:g['lessons_limit'] for g in groups_plans
     }
+
 week = data["studying_period"]
 
+# key is lesson at particular day, a value is number limit of how much lesson's teacher can handle per day
 teacher_lessons_limits = {
-        # key is lesson at particular day, a limit is how much lesson's teacher can handle per day
         day+'_'+l['name']:int(l["lessons_limit"])
         for l in lessons for day in week
     }
@@ -107,7 +107,6 @@ def ensure_list_have_size_at_least(l : list, size : int, fill_element):
 # groups at the same time. We assume teacher cannot be in two places
 # simultaneously so we need to reorder each day schedule a bit
 # by changing order in which disciplines held for each group                   
-
 def reorder_schedules(schedules : list[Dict[str,list[str]]],group_names : list[str]):
     for day in week:
         graph = nx.MultiGraph()
@@ -141,7 +140,6 @@ def reorder_schedules(schedules : list[Dict[str,list[str]]],group_names : list[s
                 schedule[lesson_index]=lesson
                 line_graph.remove_node(node)
             lesson_index+=1
-
 
 #at the end we check that schedules are fitting all necessary requirements
 def check_schedules(schedules : list[Dict[str,list[str]]],group_names : list[str]):
