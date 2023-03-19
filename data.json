@@ -44,10 +44,10 @@
             "lessons_limit": 3
         }
     ],
-    "student_lessons_per_day_limit": 5,
     "same_lessons_repeats_per_day_per_group_limit": 2,
     "groups_plans": [
         {
+            "lessons_limit" : 4,
             "name": "A",
             "math": 4,
             "physics": 4,
@@ -55,10 +55,11 @@
             "literature": 2,
             "pce": 2,
             "chemistry": 2,
-            "history": 2,
+            "history": 1,
             "informatics": 2,
-            "russian": 2
+            "russian": 1
         }, {
+            "lessons_limit" : 5,
             "name": "B",
             "math": 4,
             "physics": 2,
@@ -70,6 +71,7 @@
             "informatics": 4,
             "russian": 2
         }, {
+            "lessons_limit" : 5,
             "name": "C",
             "math": 2,
             "physics": 2,
@@ -81,6 +83,7 @@
             "informatics": 2,
             "russian": 2
         }, {
+            "lessons_limit" : 5,
             "name": "D",
             "math": 2,
             "physics": 2,

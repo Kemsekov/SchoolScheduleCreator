@@ -4,8 +4,7 @@ import networkx as nx
 data = json.load(open('data.json'))
 # a list of lessons
 lessons = data["lessons"]
-# a limit to how much lessons per for student day allowed 
-student_lessons_per_day_limit = int(data["student_lessons_per_day_limit"])
+
 # a limit to how much repetition of the same lesson per day is allowed
 same_lessons_repeats_per_day_per_group_limit = int(data["same_lessons_repeats_per_day_per_group_limit"])
 
@@ -15,7 +14,10 @@ same_lessons_repeats_per_day_per_group_limit = int(data["same_lessons_repeats_pe
 # week. Like group A need to fill 4 math and physics lessons per week and just two lessons
 # of other disciplines.
 groups_plans = data["groups_plans"]
-
+# a limit to how much lessons per for student day allowed 
+group_lessons_per_day_limit = {
+        g['name']:g['lessons_limit'] for g in groups_plans
+    }
 week = data["studying_period"]
 
 teacher_lessons_limits = {
@@ -33,7 +35,7 @@ def init_group(group):
 
     for day in week:
         graph.add_node(day)
-        graph.add_edge(name,day,capacity=student_lessons_per_day_limit)
+        graph.add_edge(name,day,capacity=group_lessons_per_day_limit[name])
 
     for l in lessons:
         l=l['name']
