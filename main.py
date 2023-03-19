@@ -159,10 +159,10 @@ def check_schedules(schedules : list[Dict[str,list[str]]],group_names : list[str
                     complete_lessons[lesson]-=1
                     lessons_count+=1
             if lessons_count>max_lessons:
-                raise Exception("Exceed max lessons count on "+day+"for group "+name)
+                raise Exception("Exceed max lessons count on "+day+" for group "+name)
         for plan in complete_lessons:
             if complete_lessons[plan]!=0:
-                raise Exception("Schedule does not completes plan!")
+                raise Exception("Schedule does not completes plan for group "+name+"\n Missing "+complete_lessons[plan]+" on lesson "+plan)
         index+=1
     for day in week:
         index = 0
