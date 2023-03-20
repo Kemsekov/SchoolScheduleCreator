@@ -142,54 +142,82 @@ def reorder_schedules(groups : list[Group]):
                 line_graph.remove_node(node)
             lesson_index+=1
 
-#at the end we check that schedules are fitting all necessary requirements
-def check_schedules(groups : list[Group]):
-    index = 0
-    for group in groups:
-        name = group.name
-        max_lessons = group_lessons_per_day_limit[name]
-        required_plan = groups_plans[index]
-        complete_lessons = {lesson["name"]:required_plan[lesson["name"]] for lesson in lessons}
-        for day in week:
-            day_schedule = group.schedule[day]
-            lessons_count=0
-            for lesson in day_schedule:
-                if lesson != filler:
-                    complete_lessons[lesson]-=1
-                    lessons_count+=1
-            if lessons_count>max_lessons:
-                raise Exception("Exceed max lessons count on "+day+" for group "+name)
-        for plan in complete_lessons:
-            if complete_lessons[plan]!=0:
-                raise Exception("Schedule does not completes plan for group "+name+"\n Missing "+complete_lessons[plan]+" on lesson "+plan)
-        index+=1
+def check_group_lessons_count_boundaries(group : Group):
+    name = group.name
+    max_lessons = group_lessons_per_day_limit[name]
     for day in week:
-        lessons_count_on_day = {lesson["name"]:0 for lesson in lessons}
-        lessons_intersection : Dict[int,list[str]]= {}
+        day_schedule = group.schedule[day]
+        lessons_count=0
+        for lesson in day_schedule:
+            if lesson != filler:
+                lessons_count+=1
+        if lessons_count>max_lessons:
+            raise Exception("Exceed max lessons count on "+day+" for group "+name)
+
+def check_group_schedule_fulfill_plan(group : Group, required_plan):
+    name = group.name
+    complete_lessons = {lesson["name"]:required_plan[lesson["name"]] for lesson in lessons}
+    for day in week:
+        day_schedule = group.schedule[day]
+        for lesson in day_schedule:
+            if lesson != filler:
+                complete_lessons[lesson]-=1
+    for plan in complete_lessons:
+        if complete_lessons[plan]!=0:
+            raise Exception("Schedule does not completes plan for group "+name+"\n Missing "+complete_lessons[plan]+" on lesson "+plan)
+
+def check_lessons_repeats_boundaries(groups : list[Group]):
+    for day in week:
         for group in groups:
             name = group.name
             same_lessons_count = {lesson["name"]:0 for lesson in lessons}
+            for lesson in group.schedule[day]:
+                if lesson != filler:
+                    same_lessons_count[lesson]+=1
+           
+            for lesson in same_lessons_count:
+                if same_lessons_count[lesson]>same_lessons_repeats_per_day_per_group_limit:
+                    raise Exception("On day "+day+" on group "+name+" count of "+lesson+" lessons exceed max lessons repeats per day for group")
+
+def check_lessons_count_on_day_boundaries(groups : list[Group]):
+    for day in week:
+        lessons_count_on_day = {lesson["name"]:0 for lesson in lessons}
+        for group in groups:
+            for lesson in group.schedule[day]:
+                if lesson != filler:
+                    lessons_count_on_day[lesson]+=1
+        for lesson in lessons:
+            if lessons_count_on_day[lesson['name']]>lesson["lessons_limit"]:
+                raise Exception("On day "+day+" "+lesson['name']+" lessons count exceed maximum lessons restrain")
+
+def check_lessons_intersection(groups : list[Group]):
+    for day in week:
+        lessons_intersection : Dict[int,list[str]]= {}
+        for group in groups:
             lesson_id = 0
             for lesson in group.schedule[day]:
                 if lesson != filler:
                     if lesson_id not in lessons_intersection:
                         lessons_intersection[lesson_id]=list()
                     lessons_intersection[lesson_id].append(lesson)
-                    lessons_count_on_day[lesson]+=1
-                    same_lessons_count[lesson]+=1
                 lesson_id+=1
-           
-            for lesson in same_lessons_count:
-                if same_lessons_count[lesson]>same_lessons_repeats_per_day_per_group_limit:
-                    raise Exception("On day "+day+" on group "+name+" count of "+lesson+" lessons exceed max lessons repeats per day for group")
-        
         for id in lessons_intersection:
             lessons_on_same_id=lessons_intersection[id]
             if len(set(lessons_on_same_id))!=len(lessons_on_same_id):
                 raise Exception("On day "+day+" there is same lessons intersection among groups : "+str(lessons_on_same_id))
-        for lesson in lessons:
-            if lessons_count_on_day[lesson['name']]>lesson["lessons_limit"]:
-                raise Exception("On day "+day+" on lesson "+lesson['name']+" lessons count exceed maximum lessons restrain")
+
+#at the end we check that schedules are fitting all necessary requirements
+def check_schedules(groups : list[Group]):
+    index = 0
+    for group in groups:
+        check_group_lessons_count_boundaries(group)
+        required_plan = groups_plans[index]
+        check_group_schedule_fulfill_plan(group,required_plan)
+        index+=1
+    check_lessons_repeats_boundaries(groups)
+    check_lessons_count_on_day_boundaries(groups)
+    check_lessons_intersection(groups)
+
 
 def main():
     groups : list[Group] = []
@@ -209,6 +237,7 @@ def main():
     
     reorder_schedules(groups)
     check_schedules(groups)
+    
     for group in groups:
         print_schedule(group)
 
