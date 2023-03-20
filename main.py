@@ -47,6 +47,7 @@ def init_group(group):
 
     for l in lessons:
         l=l['name']
+        if l not in group: continue
         lessons_limit = int(group[l])
         graph.add_node(l)
         graph.add_edge(l,end,capacity=lessons_limit)
@@ -54,6 +55,7 @@ def init_group(group):
     for day in week:
         for l in lessons:
             l=l['name']
+            if l not in group: continue
             day_lesson = day+'_'+l
             graph.add_node(day_lesson)
             graph.add_edge(day,day_lesson,capacity=same_lessons_repeats_per_day_per_group_limit)
@@ -67,13 +69,15 @@ def solve_group_graph(group_name : str,end_point_name : str,graph : nx.Graph):
         for l in lessons:
             l=l['name']
             day_lesson = day+'_'+l
-            teacher_lessons_limits[day_lesson]-=flow_dict[day_lesson][l]
+            if graph.has_edge(day_lesson,l):
+                teacher_lessons_limits[day_lesson]-=flow_dict[day_lesson][l]
     return flow_value, flow_dict
 
 def count_group_expected_lessons_in_week(group):
     result = 0
     for l in lessons:
         l=l['name']
+        if l not in group: continue
         result+=int(group[l])
     return result
 
@@ -81,13 +85,14 @@ def print_limits():
     [print(f'{i} {teacher_lessons_limits[i]}') for i in teacher_lessons_limits]
     print("----------------")
 
-def create_schedule(flow_dict : dict):
+def create_schedule(graph : nx.Graph, flow_dict : dict):
     result = {}
     for day in week:
         result[day] = []
         for l in lessons:
             l=l['name']
             day_lesson = day+'_'+l
+            if not graph.has_edge(day,day_lesson): continue
             lessons_count = flow_dict[day][day_lesson]
             for n in range(lessons_count):
                 result[day].append(l)
@@ -159,7 +164,14 @@ def check_group_lessons_count_boundaries(group : Group):
 
 def check_group_schedule_fulfill_plan(group : Group, required_plan):
     name = group.name
-    complete_lessons = {lesson["name"]:required_plan[lesson["name"]] for lesson in lessons}
+    complete_lessons = {}
+    for lesson in lessons:
+        lesson_name=lesson["name"]
+        if lesson_name in required_plan:
+            complete_lessons[lesson_name]=required_plan[lesson_name]
+        else:
+            complete_lessons[lesson_name] = 0
+            
     for day in week:
         day_schedule = group.schedule[day]
         for lesson in day_schedule:
@@ -235,7 +247,7 @@ def main():
             print("Impossible to create a schedule for group "+group_name)
             print("Try decrease lessons count for this group or increase same_lessons_repeats_per_day_per_group_limit")
             return
-        schedule = create_schedule(max_flow)
+        schedule = create_schedule(graph,max_flow)
         groups.append(Group(group_name,schedule))
     
     reorder_schedules(groups)
