@@ -1,6 +1,7 @@
 import json
 from typing import Dict
 import networkx as nx
+from group import *
 
 data = json.load(open('data.json'))
 #empty lesson
@@ -90,11 +91,11 @@ def create_schedule(flow_dict : dict):
         pass
     return result
 
-def print_schedule(group_name : str, schedule : dict):
-    print(f"Group {group_name}\n")
-    for i in schedule:
+def print_schedule(group : Group):
+    print(f"Group {group.name}\n")
+    for i in group.schedule:
         print(f"{i}:")
-        for lesson in schedule[i]:
+        for lesson in group.schedule[i]:
             print(f"\t{lesson}")
         print()
     print('-----------------')
@@ -107,15 +108,15 @@ def ensure_list_have_size_at_least(l : list, size : int, fill_element):
 # groups at the same time. We assume teacher cannot be in two places
 # simultaneously so we need to reorder each day schedule a bit
 # by changing order in which disciplines held for each group                   
-def reorder_schedules(schedules : list[Dict[str,list[str]]],group_names : list[str]):
+def reorder_schedules(groups : list[Group]):
     for day in week:
         graph = nx.MultiGraph()
 
         name_to_schedule = {}
         index = 0
-        for group_schedule in schedules:
-            name=group_names[index]
-            day_schedule = group_schedule[day]
+        for group in groups:
+            name=group.name
+            day_schedule = group.schedule[day]
             name_to_schedule[name]=day_schedule
             graph.add_node(name)
             index+=1
@@ -128,10 +129,10 @@ def reorder_schedules(schedules : list[Dict[str,list[str]]],group_names : list[s
 
         edge_lesson=nx.get_edge_attributes(graph,"lesson")
         edge_group_name=nx.get_edge_attributes(graph,"name")
-
+        
         while True:
             if(len(line_graph.nodes)==0): break
-            independent_set =  nx.maximal_independent_set(line_graph)
+            independent_set = nx.maximal_independent_set(line_graph)
             for node in independent_set:
                 lesson=edge_lesson[node]
                 group_name=edge_group_name[node]
@@ -142,15 +143,15 @@ def reorder_schedules(schedules : list[Dict[str,list[str]]],group_names : list[s
             lesson_index+=1
 
 #at the end we check that schedules are fitting all necessary requirements
-def check_schedules(schedules : list[Dict[str,list[str]]],group_names : list[str]):
+def check_schedules(groups : list[Group]):
     index = 0
-    for schedule in schedules:
-        name = group_names[index]
+    for group in groups:
+        name = group.name
         max_lessons = group_lessons_per_day_limit[name]
         required_plan = groups_plans[index]
         complete_lessons = {lesson["name"]:required_plan[lesson["name"]] for lesson in lessons}
         for day in week:
-            day_schedule = schedule[day]
+            day_schedule = group.schedule[day]
             lessons_count=0
             for lesson in day_schedule:
                 if lesson != filler:
@@ -163,14 +164,13 @@ def check_schedules(schedules : list[Dict[str,list[str]]],group_names : list[str
                 raise Exception("Schedule does not completes plan for group "+name+"\n Missing "+complete_lessons[plan]+" on lesson "+plan)
         index+=1
     for day in week:
-        index = 0
         lessons_count_on_day = {lesson["name"]:0 for lesson in lessons}
         lessons_intersection : Dict[int,list[str]]= {}
-        for schedule in schedules:
-            name = group_names[index]
+        for group in groups:
+            name = group.name
             same_lessons_count = {lesson["name"]:0 for lesson in lessons}
             lesson_id = 0
-            for lesson in schedule[day]:
+            for lesson in group.schedule[day]:
                 if lesson != filler:
                     if lesson_id not in lessons_intersection:
                         lessons_intersection[lesson_id]=list()
@@ -182,7 +182,6 @@ def check_schedules(schedules : list[Dict[str,list[str]]],group_names : list[str
             for lesson in same_lessons_count:
                 if same_lessons_count[lesson]>same_lessons_repeats_per_day_per_group_limit:
                     raise Exception("On day "+day+" on group "+name+" count of "+lesson+" lessons exceed max lessons repeats per day for group")
-            index+=1
         
         for id in lessons_intersection:
             lessons_on_same_id=lessons_intersection[id]
@@ -192,10 +191,8 @@ def check_schedules(schedules : list[Dict[str,list[str]]],group_names : list[str
             if lessons_count_on_day[lesson['name']]>lesson["lessons_limit"]:
                 raise Exception("On day "+day+" on lesson "+lesson['name']+" lessons count exceed maximum lessons restrain")
 
-
 def main():
-    schedules = []
-    group_names : list[str] = []
+    groups : list[Group] = []
     for g in groups_plans:
         group_name = g["name"]
         graph = init_group(g)
@@ -208,13 +205,12 @@ def main():
             print("Try decrease lessons count for this group or increase same_lessons_repeats_per_day_per_group_limit")
             return
         schedule = create_schedule(max_flow)
-        schedules.append(schedule)
-        group_names.append(group_name)
+        groups.append(Group(group_name,schedule))
     
-    reorder_schedules(schedules,group_names)
-    check_schedules(schedules,group_names)
-    for group_name,schedule in zip(group_names,schedules):
-        print_schedule(group_name,schedule)
+    reorder_schedules(groups)
+    check_schedules(groups)
+    for group in groups:
+        print_schedule(group)
 
 if __name__ == "__main__":
     main()
