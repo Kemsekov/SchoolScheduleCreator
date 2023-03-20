@@ -4,25 +4,28 @@ import networkx as nx
 from group import *
 
 data = json.load(open('data.json'))
+
 #empty lesson
 filler="---"
 
-# a list of lessons
+# a list of lessons along with their limits
 lessons = data["lessons"]
 
 # a limit to how much repetition of the same lesson per day is allowed
 same_lessons_repeats_per_day_per_group_limit = int(data["same_lessons_repeats_per_day_per_group_limit"])
 
 # a list of groups data :
-# group name and count of lessons this group need to fill in each 
-# week. Like group A need to fill 4 math and physics lessons per week and just two lessons
-# of other disciplines.
+# contains information about group's studying plan and 
+# limits on how many lessons group can handle per day
 groups_plans = data["groups_plans"]
+
 # a limit to how much lessons per for student day allowed 
 group_lessons_per_day_limit = {
         g['name']:g['lessons_limit'] for g in groups_plans
     }
 
+# studying period can be whatever you choose it to be,but for 
+# more intuitive and readable code I named it week
 week = data["studying_period"]
 
 # key is lesson at particular day, a value is number limit of how much lesson's teacher can handle per day
@@ -237,7 +240,7 @@ def main():
     
     reorder_schedules(groups)
     check_schedules(groups)
-    
+
     for group in groups:
         print_schedule(group)
 
